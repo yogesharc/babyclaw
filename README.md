@@ -1,10 +1,6 @@
 # TinyClaw
 
-Claude Code running 24/7 on a VPS, controlled from Telegram. Write code, manage servers, run scripts — all from your phone.
-
-A lightweight, no-bloat alternative to [OpenClaw](https://github.com/anthropics/openclaw). One file, one messaging platform, no gateway architecture. Just Claude Code on a server, talking to you via Telegram.
-
-Runs on the official Claude Agent SDK — no TOS violations, no risk of getting banned.
+Claude Code on a VPS, controlled from Telegram. A lightweight, single-file alternative to [OpenClaw](https://github.com/anthropics/openclaw). Built on the official Claude Agent SDK.
 
 ## Features
 
