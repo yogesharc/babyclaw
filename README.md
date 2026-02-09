@@ -1,25 +1,21 @@
 # TinyClaw
 
-Claude Code on your VPS, controlled from Telegram. Text, voice, images — all from your phone.
+Claude Code running 24/7 on a VPS, controlled from Telegram. Write code, manage servers, run scripts — all from your phone.
+
+A lightweight, no-bloat alternative to [OpenClaw](https://github.com/anthropics/openclaw). One file, one messaging platform, no gateway architecture. Just Claude Code on a server, talking to you via Telegram.
+
+Runs on the official Claude Agent SDK — no TOS violations, no risk of getting banned.
 
 ## Features
 
-- **Text, voice, images** — Send any message type, Claude handles it
-- **Voice transcription** — Voice messages transcribed via Whisper, then sent to Claude
-- **Session continuity** — Conversations persist across messages. `/new` to reset
-- **Message queue** — Send follow-up messages while Claude is working. They get combined and sent after
-- **Model switching** — Switch between Sonnet, Opus, etc. on the fly
-- **Thinking mode** — Toggle extended thinking
-- **Memory** — `/memorize` saves conversation context to persistent files that survive session resets
-- **Interrupt** — Stop Claude mid-task and optionally send a new message
-
-## Architecture
-
-```
-Telegram → Node.js (grammY) → Claude Agent SDK → Claude Code on VPS
-```
-
-Single `index.js` file. No framework, no database. Uses the official `@anthropic-ai/claude-agent-sdk` to call Claude Code programmatically.
+- **Always-on Claude Code** — Runs on a VPS, accessible from anywhere via Telegram
+- **Talk to it** — Send text, voice messages, or images. Voice is transcribed automatically via Whisper
+- **Persistent memory** — Conversations survive across messages. `/memorize` saves context that survives session resets
+- **Message queueing** — Send follow-ups while Claude is busy. They queue up and get sent together
+- **Cron automation** — Schedule tasks. Claude can set up and manage cron jobs that run scripts, send reports, check issues
+- **Model switching** — Swap between Sonnet, Opus, etc. on the fly
+- **Remote restart** — `/restart` from Telegram. No SSH needed
+- **Single file** — One `index.js`. No framework, no database. Uses the official Claude Agent SDK
 
 ## Prerequisites
 
@@ -41,18 +37,17 @@ curl -fsSL https://raw.githubusercontent.com/yogesharc/tinyclaw/main/setup-vps.s
 
 ### 2. Run the install script (as tinyclaw)
 
-This installs Claude Code, npm dependencies, creates the workspace, and copies config templates.
+This clones the repo into the home directory, installs Claude Code, npm dependencies, creates the workspace, and copies config templates.
 
 ```bash
 su - tinyclaw
-git clone https://github.com/yogesharc/tinyclaw.git ~/tinyclaw
-bash ~/tinyclaw/install.sh
+curl -fsSL https://raw.githubusercontent.com/yogesharc/tinyclaw/main/install.sh | bash
 ```
 
 ### 3. Configure
 
 ```bash
-nano ~/tinyclaw/.env
+nano ~/.env
 ```
 
 You need at minimum:
@@ -74,7 +69,7 @@ claude setup-token
 
 ```bash
 tmux new -s main
-bash ~/tinyclaw/start.sh
+bash ~/start.sh
 # Detach: Ctrl+B, D
 ```
 
@@ -106,7 +101,7 @@ The install script copies `global-claude.md` to `~/.claude/CLAUDE.md`. This is t
 
 ```bash
 # From your local machine
-scp index.js yourserver:/home/tinyclaw/tinyclaw/
+scp index.js yourserver:/home/tinyclaw/
 ```
 
 Then send `/restart` in Telegram. The bot picks up the new code automatically.
@@ -121,6 +116,10 @@ Then send `/restart` in Telegram. The bot picks up the new code automatically.
 6. Any queued messages are combined into a single prompt and sent next
 
 Session IDs are persisted to `state.json` so sessions survive bot restarts.
+
+## Built by
+
+[Yogesh](https://yogesh.co) — [@yogesharc](https://twitter.com/yogesharc)
 
 ## License
 

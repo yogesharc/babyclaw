@@ -2,16 +2,19 @@
 set -e
 
 # TinyClaw Install Script
-# Run as the tinyclaw user AFTER setup-vps.sh and cloning the repo.
-# Usage: bash ~/tinyclaw/install.sh
+# Run as the tinyclaw user AFTER setup-vps.sh.
+# Usage: curl -fsSL https://raw.githubusercontent.com/yogesharc/tinyclaw/main/install.sh | bash
 
 echo "=== TinyClaw Install ==="
 
-TINYCLAW_DIR="$HOME/tinyclaw"
+# ─── Clone repo into home directory ──────────────────────────
 
-if [ ! -f "$TINYCLAW_DIR/index.js" ]; then
-  echo "Error: Run this from the tinyclaw user after cloning the repo to ~/tinyclaw"
-  exit 1
+if [ ! -f "$HOME/index.js" ]; then
+  echo ">>> Cloning TinyClaw into home directory..."
+  cd ~
+  git init -q
+  git remote add origin https://github.com/yogesharc/tinyclaw.git 2>/dev/null || true
+  git pull origin main
 fi
 
 # ─── PATH setup ──────────────────────────────────────────────
@@ -48,7 +51,7 @@ touch ~/workspace/CLAUDE.md
 # ─── Install npm dependencies ────────────────────────────────
 
 echo ">>> Installing dependencies..."
-cd "$TINYCLAW_DIR"
+cd ~
 npm install
 
 # ─── Claude Code config ──────────────────────────────────────
@@ -58,7 +61,7 @@ mkdir -p ~/.claude
 
 # Global CLAUDE.md (template — Claude fills in User/Identity on first interaction)
 if [ ! -f ~/.claude/CLAUDE.md ]; then
-  cp "$TINYCLAW_DIR/global-claude.md" ~/.claude/CLAUDE.md
+  cp ~/global-claude.md ~/.claude/CLAUDE.md
   echo "    Created ~/.claude/CLAUDE.md (template)"
 else
   echo "    ~/.claude/CLAUDE.md already exists, skipping"
@@ -66,7 +69,7 @@ fi
 
 # Claude settings
 if [ ! -f ~/.claude/settings.json ]; then
-  cp "$TINYCLAW_DIR/claude-settings.json" ~/.claude/settings.json
+  cp ~/claude-settings.json ~/.claude/settings.json
   echo "    Created ~/.claude/settings.json"
 else
   echo "    ~/.claude/settings.json already exists, skipping"
@@ -74,11 +77,11 @@ fi
 
 # ─── .env ─────────────────────────────────────────────────────
 
-if [ ! -f "$TINYCLAW_DIR/.env" ]; then
-  cp "$TINYCLAW_DIR/.env.example" "$TINYCLAW_DIR/.env"
+if [ ! -f ~/.env ]; then
+  cp ~/.env.example ~/.env
   echo ""
   echo ">>> Created .env from template. Edit it now:"
-  echo "    nano $TINYCLAW_DIR/.env"
+  echo "    nano ~/.env"
   echo ""
 fi
 
@@ -88,10 +91,10 @@ echo ""
 echo "=== Install complete ==="
 echo ""
 echo "Next steps:"
-echo "  1. Edit your .env:          nano ~/tinyclaw/.env"
+echo "  1. Edit your .env:          nano ~/.env"
 echo "  2. Auth Claude Code:        claude setup-token"
 echo "  3. Start the bot:"
 echo "     tmux new -s main"
-echo "     bash ~/tinyclaw/start.sh"
+echo "     bash ~/start.sh"
 echo "     # Detach: Ctrl+B, D"
 echo ""

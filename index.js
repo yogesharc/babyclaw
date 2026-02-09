@@ -264,8 +264,11 @@ async function transcribe(filePath) {
 
 const tmpDir = join(__dirname, "tmp");
 mkdirSync(tmpDir, { recursive: true });
+const botStartTime = Math.floor(Date.now() / 1000);
 
 bot.on("message", async (ctx) => {
+  // Ignore messages sent before bot started (prevents /restart loop)
+  if (ctx.message.date < botStartTime) return;
   console.log("MSG:", ctx.message.text || "(voice/audio)", "from:", ctx.from.id);
   if (ALLOWED_USER_ID && ctx.from.id.toString() !== ALLOWED_USER_ID) return ctx.reply("Unauthorized");
 
