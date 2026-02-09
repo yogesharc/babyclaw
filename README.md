@@ -119,7 +119,7 @@ Session IDs are persisted to `state.json` so sessions survive bot restarts.
 
 ## Built by
 
-[Yogesh](https://yogesh.co) — [@yogesharc](https://twitter.com/yogesharc)
+[Yogesh](https://yogesh.co?utm_source=tinyclaw_repo) — [@yogesharc](https://twitter.com/yogesharc)
 
 ## License
 
