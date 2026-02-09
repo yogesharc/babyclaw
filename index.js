@@ -35,11 +35,11 @@ function loadState() {
   return null;
 }
 function saveState() {
-  writeFileSync(statePath, JSON.stringify({ sessionId, isNewSession, model, thinking, verbose }, null, 2));
+  writeFileSync(statePath, JSON.stringify({ sessionId, isNewSession, model, thinking, verbose, currentChatId }, null, 2));
 }
 
 const saved = loadState();
-let currentChatId = null;
+let currentChatId = saved?.currentChatId || null;
 let sessionId = saved?.sessionId || randomUUID();
 let isNewSession = saved?.isNewSession ?? true;
 let isProcessing = false;
@@ -361,6 +361,8 @@ bot.on("message", async (ctx) => {
   }
 
   if (text === "/restart") {
+    currentChatId = ctx.chat.id;
+    saveState();
     await ctx.reply("Restarting...");
     process.exit(0);
   }
@@ -437,7 +439,15 @@ async function main() {
   ]);
 
   console.log(`Bot: @${me.username}`);
-  bot.start({ onStart: () => console.log("Polling started"), allowed_updates: ["message"] });
+  bot.start({
+    onStart: () => {
+      console.log("Polling started");
+      if (currentChatId) {
+        bot.api.sendMessage(currentChatId, "Restarted.").catch(() => {});
+      }
+    },
+    allowed_updates: ["message"],
+  });
   console.log(`Session: ${sessionId} (${isNewSession ? "new" : "resumed"})`);
 }
 main().catch(console.error);
