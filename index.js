@@ -357,6 +357,11 @@ bot.on("message", async (ctx) => {
     return ctx.reply(`Tool calls: ${verbose ? "on" : "off"}`);
   }
 
+  if (text === "/restart") {
+    await ctx.reply("Restarting...");
+    process.exit(0);
+  }
+
   if (text === "/kill") {
     messageQueue = [];
     if (currentQuery) {
@@ -423,6 +428,7 @@ async function main() {
     { command: "thinking", description: "Toggle thinking on/off" },
     { command: "tools", description: "Toggle tool call notifications" },
     { command: "memorize", description: "Save something to history" },
+    { command: "restart", description: "Restart the bot" },
     { command: "kill", description: "Kill stuck Claude process" },
     { command: "interrupt", description: "Stop current task (optionally send new message)" },
   ]);

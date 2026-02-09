@@ -36,8 +36,7 @@ Single `index.js` file. No framework, no database. Uses the official `@anthropic
 This installs system packages (Node.js, git, tmux, GitHub CLI) and creates the `tinyclaw` user.
 
 ```bash
-git clone https://github.com/yogesharc/tinyclaw.git
-bash tinyclaw/setup-vps.sh
+curl -fsSL https://raw.githubusercontent.com/yogesharc/tinyclaw/main/setup-vps.sh | bash
 ```
 
 ### 2. Run the install script (as tinyclaw)
@@ -75,7 +74,7 @@ claude setup-token
 
 ```bash
 tmux new -s main
-node ~/tinyclaw/index.js
+bash ~/tinyclaw/start.sh
 # Detach: Ctrl+B, D
 ```
 
@@ -92,6 +91,7 @@ Open Telegram, find your bot, and send a message. On your first message, Claude 
 | `/tools` | Toggle tool call notifications |
 | `/memorize` | Save conversation summary to persistent history |
 | `/interrupt` | Stop current task (optionally follow with new message) |
+| `/restart` | Restart the bot (auto-restarts via start.sh) |
 | `/kill` | Kill stuck task and clear queue |
 
 ## Configuration
@@ -107,15 +107,9 @@ The install script copies `global-claude.md` to `~/.claude/CLAUDE.md`. This is t
 ```bash
 # From your local machine
 scp index.js yourserver:/home/tinyclaw/tinyclaw/
-
-# On the VPS — restart the bot
-su - tinyclaw
-tmux attach -t main
-# Ctrl+C, then: node ~/tinyclaw/index.js
-# Detach: Ctrl+B, D
 ```
 
-If `package.json` changed, run `npm install` in `~/tinyclaw` before restarting.
+Then send `/restart` in Telegram. The bot picks up the new code automatically.
 
 ## How It Works
 
