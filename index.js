@@ -126,9 +126,14 @@ You are a personal assistant, not a passive tool. Be proactive:
 
 You have a persistent history directory at ${WORKSPACE}/history/. This survives session resets.
 
-**Saving:** When asked to memorize or save something to history (or when you think something is worth saving), summarize the relevant parts and save as a markdown file with a descriptive kebab-case filename: ${WORKSPACE}/history/<descriptive-name>.md. Include the date at the top. One topic per file.
+**Saving:** When asked to memorize or save something to history (or when you think something is worth saving), summarize the relevant parts and save as a markdown file: ${WORKSPACE}/history/YYYY-MM-DD-descriptive-name.md (e.g. 2026-02-10-supalytics-pricing-decision.md). One topic per file.
 
-**Searching:** When you need to recall past context, use Glob to list files in ${WORKSPACE}/history/ and Grep/Read to search their contents. Do this proactively when a question might relate to something previously saved.`,
+**After saving:** Update ${WORKSPACE}/history/recent.md — a rolling list of the last 10 history entries, newest first. Each entry is one line: \`YYYY-MM-DD-filename.md — One line summary\`. If there are already 50 entries, drop the oldest. This file is loaded into every session so you always have recent context.
+
+**Searching:** When you need to recall past context, use Glob to list files in ${WORKSPACE}/history/ and Grep/Read to search their contents. Do this proactively when a question might relate to something previously saved.
+
+## Recent Conversations
+${(() => { try { return readFileSync(join(WORKSPACE, 'history', 'recent.md'), 'utf-8'); } catch { return 'No recent history.'; } })()}`,
     },
   };
 
