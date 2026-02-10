@@ -1,5 +1,5 @@
 import { Bot } from "grammy";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, createWriteStream, unlinkSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, createWriteStream, unlinkSync, readdirSync, statSync } from "fs";
 import { InputFile } from "grammy";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -418,6 +418,75 @@ bot.on("message", async (ctx) => {
     // Fall through to send as prompt
   }
 
+  // /list <keywords> - search recent sessions (OR matching)
+  if (text === "/list" || text.startsWith("/list ")) {
+    const keywords = text.slice(6).trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const browseMode = keywords.length === 0;
+
+    const homeDir = process.env.HOME || "/home/tinyclaw";
+    const cwdSlug = WORKSPACE.replace(/\//g, "-");
+    const sessDir = join(homeDir, ".claude", "projects", cwdSlug);
+
+    if (!existsSync(sessDir)) return ctx.reply("No sessions found.");
+
+    const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const files = readdirSync(sessDir)
+      .filter((f) => f.endsWith(".jsonl") && !f.startsWith("agent-"))
+      .map((f) => ({ name: f, path: join(sessDir, f), mtime: statSync(join(sessDir, f)).mtimeMs }))
+      .filter((f) => f.mtime > twoWeeksAgo && statSync(f.path).size > 0)
+      .sort((a, b) => b.mtime - a.mtime);
+
+    const matches = [];
+    for (const file of files) {
+      try {
+        const lines = readFileSync(file.path, "utf-8").split("\n").filter(Boolean);
+        let firstMsg = "";
+        let allText = "";
+        for (const line of lines) {
+          const obj = JSON.parse(line);
+          if (obj.type === "user" && obj.message?.content) {
+            const content = obj.message.content;
+            let msgText = "";
+            if (Array.isArray(content)) {
+              const textBlock = content.find((b) => b.type === "text");
+              if (textBlock) msgText = textBlock.text;
+            } else if (typeof content === "string") {
+              msgText = content;
+            }
+            if (!firstMsg && msgText) firstMsg = msgText;
+            allText += " " + msgText;
+          }
+        }
+        if (!browseMode) {
+          const lower = allText.toLowerCase();
+          if (!keywords.some((kw) => lower.includes(kw))) continue;
+        }
+        const id = file.name.replace(".jsonl", "");
+        const date = new Date(file.mtime).toISOString().slice(0, 10);
+        const preview = firstMsg.slice(0, 60).replace(/\n/g, " ");
+        matches.push(`${date}\n${preview}\n<code>${id}</code>`);
+      } catch {}
+    }
+
+    if (matches.length === 0) return ctx.reply(browseMode ? "No recent sessions." : `No sessions matching "${keywords.join(", ")}".`);
+    const limit = browseMode ? 5 : 10;
+    for (const m of matches.slice(0, limit)) {
+      await ctx.reply(m, { parse_mode: "HTML" }).catch(() => {});
+    }
+    return;
+  }
+
+  // /resume <session-id> - resume a previous session
+  if (text === "/resume" || text.startsWith("/resume ")) {
+    const id = text.slice(8).trim();
+    if (!id) return ctx.reply("Usage: /resume <session-id>\nUse /list <keyword> to find session IDs.");
+    messageQueue = [];
+    sessionId = id;
+    isNewSession = false;
+    saveState();
+    return ctx.reply(`Resumed session: ${id.slice(0, 8)}`);
+  }
+
   // /model or /model <name>
   if (text === "/model" || text.startsWith("/model ")) {
     const newModel = text.slice(7).trim();
@@ -451,6 +520,8 @@ async function main() {
     { command: "thinking", description: "Toggle thinking on/off" },
     { command: "tools", description: "Toggle tool call notifications" },
     { command: "memorize", description: "Save something to history" },
+    { command: "list", description: "Search recent sessions (e.g. /list deploy)" },
+    { command: "resume", description: "Resume a session (e.g. /resume abc123...)" },
     { command: "restart", description: "Restart the bot" },
     { command: "kill", description: "Kill stuck Claude process" },
     { command: "interrupt", description: "Stop current task (optionally send new message)" },

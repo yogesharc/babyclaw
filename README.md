@@ -82,6 +82,9 @@ Open Telegram, find your bot, and send a message. On your first message, Claude 
 | `/thinking` | Toggle extended thinking on/off |
 | `/tools` | Toggle tool call notifications |
 | `/memorize` | Save conversation summary to persistent history |
+| `/list` | Show 5 most recent sessions |
+| `/list <keywords>` | Search sessions from last 2 weeks (OR match) |
+| `/resume <id>` | Resume a previous session by ID |
 | `/interrupt` | Stop current task (optionally follow with new message) |
 | `/restart` | Restart the bot (auto-restarts via start.sh) |
 | `/kill` | Kill stuck task and clear queue |
@@ -93,6 +96,16 @@ The install script copies `global-claude.md` to `~/.claude/CLAUDE.md`. This is t
 - **User** — Empty by default. Claude asks who you are on first interaction and fills this in, plus creates a `<name>-profile.md` in your workspace.
 - **Identity** — Empty by default. Claude asks what you want to call it and how you want it to behave.
 - **Environment** — VPS info, cron job patterns, installed tools. Pre-filled by the template.
+
+## Memory
+
+TinyClaw has three layers of memory:
+
+**Session continuity** — Within a session, Claude remembers everything. Sessions persist across bot restarts via `state.json`. Use `/list` to browse or search past sessions, and `/resume <id>` to pick one back up with full context.
+
+**History** — Long-term memory that survives session resets. Use `/memorize` or Claude will offer to save important context on its own. Each entry is saved as a dated markdown file (`2026-02-10-topic-name.md`) in `~/workspace/history/`. Claude searches these when a question might relate to something discussed before.
+
+**Recent conversations** — A rolling list of the last 50 history entries is kept in `history/recent.md` and loaded into every new session automatically. This gives Claude awareness of what's been discussed recently without having to search.
 
 ## Deploying Updates
 
@@ -113,6 +126,23 @@ Then send `/restart` in Telegram. The bot picks up the new code automatically.
 6. Any queued messages are combined into a single prompt and sent next
 
 Session IDs are persisted to `state.json` so sessions survive bot restarts.
+
+## Example Crons
+
+The `examples/crons/` folder has real cron scripts I use daily. You don't need to set these up manually — just tell Claude via Telegram what you want automated and it'll create the script, set up crontab, and wire up Telegram notifications.
+
+Here's what I run:
+
+**Daily stats report** (`daily-stats.sh`) — Runs at 10:30 PM. Pulls website analytics via [Supalytics](https://www.supalytics.co?utm_source=tinyclaw_repo) CLI (visitors, revenue, conversions, top sources, signups), monitors competitor changelogs for new updates, lists PRs merged that day, and sends a single summary to Telegram. A quick end-of-day review of everything that happened.
+
+**Changelog worker** (`changelog-worker.sh`) — Runs at 10:20 PM, just before the daily stats report. Checks merged PRs, asks Claude Code if any are user-facing, and if so, writes a changelog entry matching the existing format, commits it, and creates a PR. By the time I check the daily stats, the changelog PR is already waiting for review.
+
+**Issue checker + worker** (`issue-checker.sh`, `issue-worker.sh`) — Runs every 15 minutes. Monitors my GitHub project board for issues assigned to a bot account. When it finds one, it clones the repo, runs Claude Code to implement the fix, creates a PR, loops through automated code review, and notifies me when it's ready for final review. Fully autonomous issue resolution.
+
+To set up your own crons, just ask Claude:
+> "Set up a cron job that checks my GitHub for new issues every hour and notifies me on Telegram"
+
+Claude will create the script, make it executable, and add it to crontab.
 
 ## Built by
 
