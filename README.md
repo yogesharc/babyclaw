@@ -16,7 +16,7 @@ Claude Code on a VPS, controlled from Telegram. A lightweight, single-file alter
 ## Prerequisites
 
 - A VPS (Ubuntu recommended, any provider works)
-- [Claude Code](https://claude.ai/download) with a Max subscription or API key
+- [Claude Code](https://claude.ai/download) with a Claude subscription (Pro, Max) or API key
 - A Telegram bot token (from [@BotFather](https://t.me/BotFather))
 - Your Telegram user ID (from [@userinfobot](https://t.me/userinfobot))
 - (Optional) OpenAI API key for voice message transcription
@@ -40,7 +40,13 @@ su - tinyclaw
 curl -fsSL https://raw.githubusercontent.com/yogesharc/tinyclaw/main/install.sh | bash
 ```
 
-### 3. Configure
+### 3. Authenticate Claude Code
+
+```bash
+claude setup-token
+```
+
+### 4. Configure
 
 ```bash
 nano ~/.env
@@ -51,15 +57,10 @@ You need at minimum:
 - `TELEGRAM_USER_ID` — Your Telegram user ID (locks the bot to only you)
 
 Optional:
+- `CLAUDE_CODE_OAUTH_TOKEN` — From `claude setup-token` (for subscription auth)
 - `OPENAI_API_KEY` — For voice message transcription
 - `TELEGRAM_CHAT_ID` — For cron scripts that send Telegram notifications
 - `WORKSPACE` — Directory where Claude Code works (default: `/home/tinyclaw/workspace`)
-
-### 4. Authenticate Claude Code
-
-```bash
-claude setup-token
-```
 
 ### 5. Start
 
