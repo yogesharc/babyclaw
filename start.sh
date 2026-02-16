@@ -1,11 +1,11 @@
 #!/bin/bash
-# Auto-restart wrapper for TinyClaw
-# Usage: bash ~/tinyclaw/start.sh (inside tmux)
+# Auto-restart wrapper for BabyClaw
+# Usage: bash ~/babyclaw/start.sh (inside tmux)
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
 while true; do
-  echo "Starting TinyClaw..."
+  echo "Starting BabyClaw..."
   START_TIME=$(date +%s)
   node "$DIR/index.js"
   ELAPSED=$(( $(date +%s) - START_TIME ))

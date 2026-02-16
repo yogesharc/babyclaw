@@ -10,10 +10,10 @@
 #   - Shows PRs merged today across your org
 #   - Sends everything as a single Telegram message
 
-export PATH="/home/tinyclaw/.local/bin:/home/tinyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+export PATH="/home/babyclaw/.local/bin:/home/babyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
 set -euo pipefail
 
-source /home/tinyclaw/.env
+source /home/babyclaw/.env
 TODAY=$(TZ=Asia/Kathmandu date +%Y-%m-%d)
 TZ_OPT="--timezone Asia/Kathmandu"
 
@@ -44,7 +44,7 @@ SIGNUP_SOURCES=$(echo "$SIGNUP_JSON" | jq -r '.data[] | select(.dimensions.refer
 
 # --- Competitor changelog monitoring ---
 # Fetches a competitor's changelog page and detects new entries
-COMPETITOR_CACHE="/home/tinyclaw/workspace/crons/competitor-changelog.txt"
+COMPETITOR_CACHE="/home/babyclaw/workspace/crons/competitor-changelog.txt"
 COMPETITOR_SECTION=""
 
 COMPETITOR_HTML=$(curl -s "https://competitor.example.com/changelog" 2>/dev/null || echo "")

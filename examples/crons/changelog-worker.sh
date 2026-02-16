@@ -11,13 +11,13 @@
 
 set -euo pipefail
 
-export PATH="/home/tinyclaw/.local/bin:/home/tinyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
-source /home/tinyclaw/.env
+export PATH="/home/babyclaw/.local/bin:/home/babyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+source /home/babyclaw/.env
 TODAY=$(TZ=Asia/Kathmandu date +%Y-%m-%d)
 
 REPO="your-org/your-repo"
-WORK_DIR="/home/tinyclaw/workspace/issues/changelog-${TODAY}"
-LOCK_FILE="/home/tinyclaw/workspace/crons/locks/changelog-${TODAY}.lock"
+WORK_DIR="/home/babyclaw/workspace/issues/changelog-${TODAY}"
+LOCK_FILE="/home/babyclaw/workspace/crons/locks/changelog-${TODAY}.lock"
 BRANCH="changelog/${TODAY}"
 
 notify() {
@@ -45,7 +45,7 @@ if [ "$PR_COUNT" -eq 0 ]; then exit 0; fi
 PR_SUMMARY=$(echo "$PRS_JSON" | jq -r '.[] | "PR #\(.number): \(.title)\n\(.body // "No description")\n---"')
 
 # Clone repo and set up
-mkdir -p /home/tinyclaw/workspace/issues
+mkdir -p /home/babyclaw/workspace/issues
 [ -d "$WORK_DIR" ] && rm -rf "$WORK_DIR"
 gh repo clone "$REPO" "$WORK_DIR" -- --depth=50 2>/dev/null
 cd "$WORK_DIR"
@@ -66,7 +66,7 @@ Instructions:
 4. Commit with message: 'Add changelog entry for ${TODAY}'
 5. If nothing is changelog-worthy, output 'NO_CHANGELOG_NEEDED'"
 
-CLAUDE_OUTPUT=$(/home/tinyclaw/.local/bin/claude -p "$CLAUDE_PROMPT" \
+CLAUDE_OUTPUT=$(/home/babyclaw/.local/bin/claude -p "$CLAUDE_PROMPT" \
   --dangerously-skip-permissions \
   --output-format text \
   2>&1) || true

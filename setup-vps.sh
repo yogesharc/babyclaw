@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 
-# TinyClaw VPS Setup
+# BabyClaw VPS Setup
 # Prerequisites: Ubuntu VPS, root access, git installed
-# This script creates the tinyclaw user and sets up the environment.
-# After this, switch to tinyclaw user and run install.sh.
+# This script creates the babyclaw user and sets up the environment.
+# After this, switch to babyclaw user and run install.sh.
 
-echo "=== TinyClaw VPS Setup (root) ==="
+echo "=== BabyClaw VPS Setup (root) ==="
 
 if [ "$EUID" -ne 0 ]; then
   echo "Error: Run this as root"
@@ -31,32 +31,32 @@ chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
 apt update && apt install -y gh
 
-# ─── Create tinyclaw user ────────────────────────────────────
+# ─── Create babyclaw user ────────────────────────────────────
 
-echo ">>> Creating tinyclaw user..."
-id tinyclaw 2>/dev/null || useradd -m -s /bin/bash tinyclaw
+echo ">>> Creating babyclaw user..."
+id babyclaw 2>/dev/null || useradd -m -s /bin/bash babyclaw
 
 # Scoped sudo (install packages only)
-cat > /etc/sudoers.d/tinyclaw << 'EOF'
-tinyclaw ALL=(ALL) NOPASSWD: /usr/bin/apt-get install *, /usr/bin/apt-get update, /usr/bin/apt-get upgrade, /usr/bin/npm install -g *
+cat > /etc/sudoers.d/babyclaw << 'EOF'
+babyclaw ALL=(ALL) NOPASSWD: /usr/bin/apt-get install *, /usr/bin/apt-get update, /usr/bin/apt-get upgrade, /usr/bin/npm install -g *
 EOF
-chmod 440 /etc/sudoers.d/tinyclaw
-visudo -cf /etc/sudoers.d/tinyclaw
+chmod 440 /etc/sudoers.d/babyclaw
+visudo -cf /etc/sudoers.d/babyclaw
 
 # tmux config
-cat > /home/tinyclaw/.tmux.conf << 'EOF'
+cat > /home/babyclaw/.tmux.conf << 'EOF'
 set -g mouse on
 set -g base-index 1
 setw -g pane-base-index 1
 set -g history-limit 50000
 EOF
-chown tinyclaw:tinyclaw /home/tinyclaw/.tmux.conf
+chown babyclaw:babyclaw /home/babyclaw/.tmux.conf
 
 echo ""
 echo "=== Root setup complete ==="
 echo ""
 echo "Next steps:"
-echo "  1. Switch to tinyclaw user:  su - tinyclaw"
-echo "  2. Clone the repo:           git clone https://github.com/yogesharc/tinyclaw.git ~/tinyclaw"
-echo "  3. Run install script:       bash ~/tinyclaw/install.sh"
+echo "  1. Switch to babyclaw user:  su - babyclaw"
+echo "  2. Clone the repo:           git clone https://github.com/yogesharc/babyclaw.git ~/babyclaw"
+echo "  3. Run install script:       bash ~/babyclaw/install.sh"
 echo ""

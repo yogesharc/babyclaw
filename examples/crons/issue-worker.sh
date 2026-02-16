@@ -12,15 +12,15 @@
 
 set -euo pipefail
 
-export PATH="/home/tinyclaw/.local/bin:/home/tinyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
-source /home/tinyclaw/.env
+export PATH="/home/babyclaw/.local/bin:/home/babyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+source /home/babyclaw/.env
 ISSUE_NUMBER="$1"
 ISSUE_TITLE="$2"
 PROJECT_ITEM_ID="$3"
 
 REPO="your-org/your-repo"
-WORK_DIR="/home/tinyclaw/workspace/issues/issue-${ISSUE_NUMBER}"
-LOCK_FILE="/home/tinyclaw/workspace/crons/locks/issue-${ISSUE_NUMBER}.lock"
+WORK_DIR="/home/babyclaw/workspace/issues/issue-${ISSUE_NUMBER}"
+LOCK_FILE="/home/babyclaw/workspace/crons/locks/issue-${ISSUE_NUMBER}.lock"
 BRANCH="fix/issue-${ISSUE_NUMBER}"
 
 # Your GitHub Project V2 IDs
@@ -50,7 +50,7 @@ mutation {
 }" > /dev/null 2>&1
 
 # Clone repo and create branch
-mkdir -p /home/tinyclaw/workspace/issues
+mkdir -p /home/babyclaw/workspace/issues
 [ -d "$WORK_DIR" ] && rm -rf "$WORK_DIR"
 gh repo clone "$REPO" "$WORK_DIR" -- --depth=50 2>/dev/null
 cd "$WORK_DIR"
@@ -76,7 +76,7 @@ Instructions:
 4. Commit your changes with a clear commit message referencing #${ISSUE_NUMBER}
 5. Do NOT push to main. Only commit to the current branch."
 
-CLAUDE_JSON=$(/home/tinyclaw/.local/bin/claude -p "$CLAUDE_PROMPT" \
+CLAUDE_JSON=$(/home/babyclaw/.local/bin/claude -p "$CLAUDE_PROMPT" \
   --dangerously-skip-permissions \
   --output-format json \
   2>&1) || true

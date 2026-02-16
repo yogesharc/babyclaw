@@ -12,9 +12,9 @@
 
 # Environment
 
-You are running on a VPS (Ubuntu) as the `tinyclaw` user.
-Home: /home/tinyclaw
-Workspace: /home/tinyclaw/workspace
+You are running on a VPS (Ubuntu) as the `babyclaw` user.
+Home: /home/babyclaw
+Workspace: /home/babyclaw/workspace
 
 You are running in non-interactive mode. For interactive commands (logins, installers with prompts):
 - Run them in a background shell and check back on the result
@@ -27,17 +27,17 @@ You are running in non-interactive mode. For interactive commands (logins, insta
 
 Schedule tasks using crontab. List: `crontab -l`. Add:
 ```bash
-(crontab -l 2>/dev/null; echo '0 9 * * * /home/tinyclaw/workspace/crons/my-script.sh') | crontab -
+(crontab -l 2>/dev/null; echo '0 9 * * * /home/babyclaw/workspace/crons/my-script.sh') | crontab -
 ```
 
 **IMPORTANT:** Cron runs with a minimal PATH (`/usr/bin:/bin`). Always add this line near the top of every cron script:
 ```bash
-export PATH="/home/tinyclaw/.local/bin:/home/tinyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+export PATH="/home/babyclaw/.local/bin:/home/babyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
 ```
 
 For cron scripts that need Claude Code:
 ```bash
-/home/tinyclaw/.local/bin/claude -p 'your prompt' --dangerously-skip-permissions --output-format text
+/home/babyclaw/.local/bin/claude -p 'your prompt' --dangerously-skip-permissions --output-format text
 ```
 
 To send results to Telegram:

@@ -1,28 +1,28 @@
 #!/bin/bash
 set -e
 
-# TinyClaw Install Script
-# Run as the tinyclaw user AFTER setup-vps.sh.
-# Usage: curl -fsSL https://raw.githubusercontent.com/yogesharc/tinyclaw/main/install.sh | bash
+# BabyClaw Install Script
+# Run as the babyclaw user AFTER setup-vps.sh.
+# Usage: curl -fsSL https://raw.githubusercontent.com/yogesharc/babyclaw/main/install.sh | bash
 
-echo "=== TinyClaw Install ==="
+echo "=== BabyClaw Install ==="
 
 # ─── Clone repo into home directory ──────────────────────────
 
 if [ ! -f "$HOME/index.js" ]; then
-  echo ">>> Cloning TinyClaw into home directory..."
+  echo ">>> Cloning BabyClaw into home directory..."
   cd ~
   git init -q
-  git remote add origin https://github.com/yogesharc/tinyclaw.git 2>/dev/null || true
+  git remote add origin https://github.com/yogesharc/babyclaw.git 2>/dev/null || true
   git pull origin main
 fi
 
 # ─── PATH setup ──────────────────────────────────────────────
 
-if ! grep -q "TinyClaw paths" ~/.bashrc 2>/dev/null; then
+if ! grep -q "BabyClaw paths" ~/.bashrc 2>/dev/null; then
   cat >> ~/.bashrc << 'EOF'
 
-# TinyClaw paths
+# BabyClaw paths
 export PATH="$HOME/.local/bin:$HOME/.bun/bin:$HOME/.npm-global/bin:$PATH"
 EOF
 fi

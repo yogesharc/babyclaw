@@ -22,7 +22,7 @@ if (existsSync(envPath)) {
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const ALLOWED_USER_ID = process.env.TELEGRAM_USER_ID;
-const WORKSPACE = process.env.WORKSPACE || "/home/tinyclaw/workspace";
+const WORKSPACE = process.env.WORKSPACE || "/home/babyclaw/workspace";
 
 if (!TELEGRAM_TOKEN) { console.error("TELEGRAM_TOKEN required"); process.exit(1); }
 
@@ -109,6 +109,8 @@ async function runClaude(prompt, chatId) {
       preset: "claude_code",
       append: `You are being controlled via a Telegram bot. When the user asks you to send/show them an image file, include [SEND_IMAGE: /absolute/path/to/image] in your response and the orchestrator will deliver it to Telegram. Only use this when explicitly asked to send an image.
 
+When the user asks you to send them a file (any file type - markdown, text, code, etc.), include [SEND_FILE: /absolute/path/to/file] in your response and the orchestrator will send it as a Telegram document. Use this for any file the user wants to download/read on their device.
+
 ## Identity & User Info
 
 Your identity (name, personality) and info about the user are defined in ~/.claude/CLAUDE.md. The user's detailed profile is linked from there. When asked about yourself or the user, read these files directly — never ask for permission to read config or profile files, just read them.
@@ -118,19 +120,27 @@ Your identity (name, personality) and info about the user are defined in ~/.clau
 You are a personal assistant, not a passive tool. Be proactive:
 - **Suggest next steps** — After completing a task, suggest what could be done next or what you noticed along the way.
 - **Offer to help** — If you spot issues, improvements, or related tasks, mention them. "Want me to also fix X?" or "I noticed Y, should I look into it?"
-- **Memorize important things** — If the conversation covers something worth remembering (decisions, preferences, new projects, important context), offer to save it to history.
 - **Never wait passively** — Don't just answer and stop. Think about what the user might need next.
 - **Read files directly** — Never ask permission to read files, configs, logs, or code. Just read them. You have full access.
 
+## Personality Adaptation
+
+Observe how the user communicates — their tone, slang, sentence structure, emoji usage, formality level. Gradually adapt your communication style to match theirs.
+
+When you notice distinct patterns in how they talk (e.g., they use "ngl", "tbh", short sentences, or specific phrases), start mirroring those naturally. Don't force it or be cringe about it.
+
+**Updating your personality:** Periodically (every few meaningful conversations), update the "Identity" section in ~/.claude/CLAUDE.md to reflect your evolved communication style. Add notes like:
+- Preferred slang/phrases the user uses
+- Tone observations (e.g., "user prefers blunt responses", "uses humor often")
+- Any communication preferences you've learned
+
+Keep these updates subtle and natural. Don't announce when you're doing it.
+
 ## History (persistent memory across sessions)
 
-You have a persistent history directory at ${WORKSPACE}/history/. This survives session resets.
+All conversations are automatically saved. You have a persistent history directory at ${WORKSPACE}/history/ for important summaries and decisions.
 
-**Saving:** When asked to memorize or save something to history (or when you think something is worth saving), summarize the relevant parts and save as a markdown file: ${WORKSPACE}/history/YYYY-MM-DD-descriptive-name.md (e.g. 2026-02-10-supalytics-pricing-decision.md). One topic per file.
-
-**After saving:** Update ${WORKSPACE}/history/recent.md — a rolling list of the last 10 history entries, newest first. Each entry is one line: \`YYYY-MM-DD-filename.md — One line summary\`. If there are already 50 entries, drop the oldest. This file is loaded into every session so you always have recent context.
-
-**Searching:** When you need to recall past context, use Glob to list files in ${WORKSPACE}/history/ and Grep/Read to search their contents. Do this proactively when a question might relate to something previously saved.
+**Searching past context:** Use Glob to list files in ${WORKSPACE}/history/ and Grep/Read to search their contents. Do this proactively when a question might relate to something previously discussed.
 
 ## Recent Conversations
 ${(() => { try { return readFileSync(join(WORKSPACE, 'history', 'recent.md'), 'utf-8'); } catch { return 'No recent history.'; } })()}`,
@@ -180,6 +190,24 @@ ${(() => { try { return readFileSync(join(WORKSPACE, 'history', 'recent.md'), 'u
       }
     }
     resultText = resultText.replace(/\[SEND_IMAGE:\s*.+?\]\n?/g, "").trim();
+  }
+
+  // Parse [SEND_FILE: /path] markers from result and send as document
+  if (chatId) {
+    const fileMarkers = resultText.matchAll(/\[SEND_FILE:\s*(.+?)\]/g);
+    for (const match of fileMarkers) {
+      const filePath = match[1].trim();
+      try {
+        if (existsSync(filePath)) {
+          await bot.api.sendDocument(chatId, new InputFile(filePath));
+        } else {
+          await bot.api.sendMessage(chatId, `File not found: ${filePath}`);
+        }
+      } catch (err) {
+        console.error(`Failed to send file ${filePath}:`, err.message);
+      }
+    }
+    resultText = resultText.replace(/\[SEND_FILE:\s*.+?\]\n?/g, "").trim();
   }
 
   currentQuery = null;
@@ -345,10 +373,32 @@ bot.on("message", async (ctx) => {
 
   // --- Commands (always processed immediately, never queued) ---
 
-  if (text === "/start") return ctx.reply("TinyClaw ready.");
+  if (text === "/start") return ctx.reply("BabyClaw ready.");
 
   if (text === "/new") {
+    // If busy, kill current task first
+    if (isProcessing) {
+      await interruptClaude();
+    }
     messageQueue = [];
+    // Memorize current session before starting new one
+    if (!isNewSession) {
+      isProcessing = true;
+      ctx.reply("Saving current session...").catch(() => {});
+      const typingInterval = setInterval(() => {
+        bot.api.sendChatAction(ctx.chat.id, "typing").catch(() => {});
+      }, 4000);
+      bot.api.sendChatAction(ctx.chat.id, "typing").catch(() => {});
+      try {
+        await runClaude("Run the /memorize skill to save this conversation to history.", ctx.chat.id);
+      } catch (err) {
+        console.error("Memorize error:", err.message);
+        // Continue anyway - don't block new session creation
+      } finally {
+        clearInterval(typingInterval);
+        isProcessing = false;
+      }
+    }
     sessionId = randomUUID();
     isNewSession = true;
     saveState();
@@ -409,21 +459,12 @@ bot.on("message", async (ctx) => {
     }
   }
 
-  // /memorize [optional context] - summarize conversation and save to history
-  if (text === "/memorize" || text.startsWith("/memorize ")) {
-    const hint = text.slice(10).trim();
-    text = hint
-      ? `Summarize the current conversation and save it to history. Focus on: ${hint}`
-      : `Summarize the current conversation and save it to history.`;
-    // Fall through to send as prompt
-  }
-
   // /list <keywords> - search recent sessions (OR matching)
   if (text === "/list" || text.startsWith("/list ")) {
     const keywords = text.slice(6).trim().toLowerCase().split(/\s+/).filter(Boolean);
     const browseMode = keywords.length === 0;
 
-    const homeDir = process.env.HOME || "/home/tinyclaw";
+    const homeDir = process.env.HOME || "/home/babyclaw";
     const cwdSlug = WORKSPACE.replace(/\//g, "-");
     const sessDir = join(homeDir, ".claude", "projects", cwdSlug);
 
@@ -464,14 +505,15 @@ bot.on("message", async (ctx) => {
         const id = file.name.replace(".jsonl", "");
         const date = new Date(file.mtime).toISOString().slice(0, 10);
         const preview = firstMsg.slice(0, 60).replace(/\n/g, " ");
-        matches.push(`${date}\n${preview}\n<code>${id}</code>`);
+        matches.push({ date, preview, id });
       } catch {}
     }
 
     if (matches.length === 0) return ctx.reply(browseMode ? "No recent sessions." : `No sessions matching "${keywords.join(", ")}".`);
     const limit = browseMode ? 5 : 10;
     for (const m of matches.slice(0, limit)) {
-      await ctx.reply(m, { parse_mode: "HTML" }).catch(() => {});
+      await ctx.reply(`${m.date}\n${m.preview}`, { parse_mode: "HTML" }).catch(() => {});
+      await ctx.reply(m.id).catch(() => {});
     }
     return;
   }
@@ -519,7 +561,6 @@ async function main() {
     { command: "model", description: "Change model (e.g. /model opus)" },
     { command: "thinking", description: "Toggle thinking on/off" },
     { command: "tools", description: "Toggle tool call notifications" },
-    { command: "memorize", description: "Save something to history" },
     { command: "list", description: "Search recent sessions (e.g. /list deploy)" },
     { command: "resume", description: "Resume a session (e.g. /resume abc123...)" },
     { command: "restart", description: "Restart the bot" },

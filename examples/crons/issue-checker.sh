@@ -10,13 +10,13 @@
 #     to fix the issue, creates a PR, and optionally loops through code review
 #   - Sends Telegram notifications at each stage
 
-export PATH="/home/tinyclaw/.local/bin:/home/tinyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+export PATH="/home/babyclaw/.local/bin:/home/babyclaw/.bun/bin:/usr/local/bin:/usr/bin:/bin"
 set -euo pipefail
 
-source /home/tinyclaw/.env
-LOCK_DIR="/home/tinyclaw/workspace/crons/locks"
-LOG_DIR="/home/tinyclaw/workspace/crons/logs"
-WORKER_SCRIPT="/home/tinyclaw/workspace/crons/issue-worker.sh"
+source /home/babyclaw/.env
+LOCK_DIR="/home/babyclaw/workspace/crons/locks"
+LOG_DIR="/home/babyclaw/workspace/crons/logs"
+WORKER_SCRIPT="/home/babyclaw/workspace/crons/issue-worker.sh"
 
 # Your GitHub Project V2 IDs (get from GitHub GraphQL API)
 PROJECT_ID="your_project_id"

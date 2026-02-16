@@ -1,4 +1,4 @@
-# TinyClaw
+# BabyClaw
 
 Claude Code on a VPS, controlled from Telegram. A lightweight, single-file alternative to [OpenClaw](https://github.com/anthropics/openclaw). Built on the official Claude Agent SDK.
 
@@ -6,7 +6,9 @@ Claude Code on a VPS, controlled from Telegram. A lightweight, single-file alter
 
 - **Always-on Claude Code** — Runs on a VPS, accessible from anywhere via Telegram
 - **Talk to it** — Send text, voice messages, or images. Voice is transcribed automatically via Whisper
-- **Persistent memory** — Conversations survive across messages. `/memorize` saves context that survives session resets
+- **Get files back** — Ask Claude to send you any file (images, code, docs) and it delivers them directly in Telegram
+- **Persistent memory** — Conversations auto-save when starting a new session with `/new`. Context survives session resets
+- **Personality adaptation** — Claude mirrors your communication style over time and evolves its personality
 - **Message queueing** — Send follow-ups while Claude is busy. They queue up and get sent together
 - **Cron automation** — Schedule tasks. Claude can set up and manage cron jobs that run scripts, send reports, check issues
 - **Model switching** — Swap between Sonnet, Opus, etc. on the fly
@@ -25,19 +27,19 @@ Claude Code on a VPS, controlled from Telegram. A lightweight, single-file alter
 
 ### 1. Run the setup script (as root)
 
-This installs system packages (Node.js, git, tmux, GitHub CLI) and creates the `tinyclaw` user.
+This installs system packages (Node.js, git, tmux, GitHub CLI) and creates the `babyclaw` user.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yogesharc/tinyclaw/main/setup-vps.sh | bash
+curl -fsSL https://raw.githubusercontent.com/yogesharc/babyclaw/main/setup-vps.sh | bash
 ```
 
-### 2. Run the install script (as tinyclaw)
+### 2. Run the install script (as babyclaw)
 
 This clones the repo into the home directory, installs Claude Code, npm dependencies, creates the workspace, and copies config templates.
 
 ```bash
-su - tinyclaw
-curl -fsSL https://raw.githubusercontent.com/yogesharc/tinyclaw/main/install.sh | bash
+su - babyclaw
+curl -fsSL https://raw.githubusercontent.com/yogesharc/babyclaw/main/install.sh | bash
 ```
 
 ### 3. Authenticate Claude Code
@@ -60,7 +62,7 @@ Optional:
 - `CLAUDE_CODE_OAUTH_TOKEN` — From `claude setup-token` (for subscription auth)
 - `OPENAI_API_KEY` — For voice message transcription
 - `TELEGRAM_CHAT_ID` — For cron scripts that send Telegram notifications
-- `WORKSPACE` — Directory where Claude Code works (default: `/home/tinyclaw/workspace`)
+- `WORKSPACE` — Directory where Claude Code works (default: `/home/babyclaw/workspace`)
 
 ### 5. Start
 
@@ -81,7 +83,6 @@ Open Telegram, find your bot, and send a message. On your first message, Claude 
 | `/model <name>` | Switch model (e.g. `/model opus`) |
 | `/thinking` | Toggle extended thinking on/off |
 | `/tools` | Toggle tool call notifications |
-| `/memorize` | Save conversation summary to persistent history |
 | `/list` | Show 5 most recent sessions |
 | `/list <keywords>` | Search sessions from last 2 weeks (OR match) |
 | `/resume <id>` | Resume a previous session by ID |
@@ -99,11 +100,11 @@ The install script copies `global-claude.md` to `~/.claude/CLAUDE.md`. This is t
 
 ## Memory
 
-TinyClaw has three layers of memory:
+BabyClaw has three layers of memory:
 
 **Session continuity** — Within a session, Claude remembers everything. Sessions persist across bot restarts via `state.json`. Use `/list` to browse or search past sessions, and `/resume <id>` to pick one back up with full context.
 
-**History** — Long-term memory that survives session resets. Use `/memorize` or Claude will offer to save important context on its own. Each entry is saved as a dated markdown file (`2026-02-10-topic-name.md`) in `~/workspace/history/`. Claude searches these when a question might relate to something discussed before.
+**History** — Long-term memory that survives session resets. Automatically saved when you start a new session with `/new`. Each entry is saved as a dated markdown file (`2026-02-10-topic-name.md`) in `~/workspace/history/`. Claude searches these when a question might relate to something discussed before.
 
 **Recent conversations** — A rolling list of the last 50 history entries is kept in `history/recent.md` and loaded into every new session automatically. This gives Claude awareness of what's been discussed recently without having to search.
 
@@ -111,7 +112,7 @@ TinyClaw has three layers of memory:
 
 ```bash
 # From your local machine
-scp index.js yourserver:/home/tinyclaw/
+scp index.js yourserver:/home/babyclaw/
 ```
 
 Then send `/restart` in Telegram. The bot picks up the new code automatically.
@@ -133,7 +134,7 @@ The `examples/crons/` folder has real cron scripts I use daily. You don't need t
 
 Here's what I run:
 
-**Daily stats report** (`daily-stats.sh`) — Runs at 10:30 PM. Pulls website analytics via [Supalytics](https://www.supalytics.co?utm_source=tinyclaw_repo) CLI (visitors, revenue, conversions, top sources, signups), monitors competitor changelogs for new updates, lists PRs merged that day, and sends a single summary to Telegram. A quick end-of-day review of everything that happened.
+**Daily stats report** (`daily-stats.sh`) — Runs at 10:30 PM. Pulls website analytics via [Supalytics](https://www.supalytics.co?utm_source=babyclaw_repo) CLI (visitors, revenue, conversions, top sources, signups), monitors competitor changelogs for new updates, lists PRs merged that day, and sends a single summary to Telegram. A quick end-of-day review of everything that happened.
 
 **Changelog worker** (`changelog-worker.sh`) — Runs at 10:20 PM, just before the daily stats report. Checks merged PRs, asks Claude Code if any are user-facing, and if so, writes a changelog entry matching the existing format, commits it, and creates a PR. By the time I check the daily stats, the changelog PR is already waiting for review.
 
@@ -146,7 +147,7 @@ Claude will create the script, make it executable, and add it to crontab.
 
 ## Built by
 
-[Yogesh](https://yogesh.co?utm_source=tinyclaw_repo) — [@yogesharc](https://twitter.com/yogesharc)
+[Yogesh](https://yogesh.co?utm_source=babyclaw_repo) — [@yogesharc](https://twitter.com/yogesharc)
 
 ## License
 
