@@ -10,7 +10,7 @@ Claude Code on a VPS, controlled from Telegram. A lightweight, single-file alter
 - **Talk to it** — Send text, voice messages, or images. Voice is transcribed automatically via Whisper
 - **Get files back** — Ask Claude to send you any file (images, code, docs) and it delivers them directly in Telegram
 - **Persistent memory** — Conversations auto-save when starting a new session with `/new`. Context survives session resets
-- **Personality adaptation** — Claude mirrors your communication style over time and evolves its personality
+- **Personality adaptation** (WIP) — Claude mirrors your communication style over time and evolves its personality
 - **Message queueing** — Send follow-ups while Claude is busy. They queue up and get sent together
 - **Cron automation** — Schedule tasks. Claude can set up and manage cron jobs that run scripts, send reports, check issues
 - **Model switching** — Swap between Sonnet, Opus, etc. on the fly
