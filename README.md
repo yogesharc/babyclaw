@@ -15,6 +15,7 @@ Claude Code on a VPS, controlled from Telegram. A lightweight, single-file alter
 - **Cron automation** — Schedule tasks. Claude can set up and manage cron jobs that run scripts, send reports, check issues
 - **Model switching** — Swap between Sonnet, Opus, etc. on the fly
 - **Remote restart** — `/restart` from Telegram. No SSH needed
+- **Browse the web** — Claude can open URLs, interact with pages, and take screenshots via [agent-browser](https://agent-browser.dev)
 - **Single file** — One `index.js`. No framework, no database. Uses the official Claude Agent SDK
 
 ## Prerequisites

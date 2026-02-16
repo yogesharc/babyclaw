@@ -40,6 +40,15 @@ echo ">>> Installing Claude Code..."
 curl -fsSL https://claude.ai/install.sh | bash
 export PATH="$HOME/.local/bin:$PATH"
 
+# ─── Install agent-browser ───────────────────────────────────
+
+echo ">>> Installing agent-browser..."
+npm install -g agent-browser
+npx -y playwright install chromium
+mkdir -p ~/.claude/skills/agent-browser
+curl -o ~/.claude/skills/agent-browser/SKILL.md \
+  https://raw.githubusercontent.com/vercel-labs/agent-browser/main/skills/agent-browser/SKILL.md
+
 # ─── Create workspace ────────────────────────────────────────
 
 echo ">>> Creating workspace..."

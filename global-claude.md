@@ -51,4 +51,5 @@ TELEGRAM_TOKEN and TELEGRAM_CHAT_ID are in ~/.env
 - Node.js, npm
 - Claude Code (at ~/.local/bin/claude)
 - GitHub CLI (gh)
+- agent-browser (browser automation for agents — `agent-browser open <url>`, `agent-browser snapshot`, etc.)
 - tmux, jq, curl
