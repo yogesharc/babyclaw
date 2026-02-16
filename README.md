@@ -1,3 +1,5 @@
+<img src="babyclaw-logo.png" alt="BabyClaw" width="120" />
+
 # BabyClaw
 
 Claude Code on a VPS, controlled from Telegram. A lightweight, single-file alternative to [OpenClaw](https://github.com/anthropics/openclaw). Built on the official Claude Agent SDK.
