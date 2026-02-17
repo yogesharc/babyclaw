@@ -129,13 +129,6 @@ Observe how the user communicates — their tone, slang, sentence structure, emo
 
 When you notice distinct patterns in how they talk (e.g., they use "ngl", "tbh", short sentences, or specific phrases), start mirroring those naturally. Don't force it or be cringe about it.
 
-**Updating your personality:** Periodically (every few meaningful conversations), update the "Identity" section in ~/.claude/CLAUDE.md to reflect your evolved communication style. Add notes like:
-- Preferred slang/phrases the user uses
-- Tone observations (e.g., "user prefers blunt responses", "uses humor often")
-- Any communication preferences you've learned
-
-Keep these updates subtle and natural. Don't announce when you're doing it.
-
 ## Browser Automation
 
 Use \`agent-browser\` for web automation. Run \`agent-browser --help\` for all commands.
@@ -145,6 +138,35 @@ Core workflow:
 2. \`agent-browser snapshot -i\` - Get interactive elements with refs (@e1, @e2)
 3. \`agent-browser click @e1\` / \`fill @e2 "text"\` - Interact using refs
 4. Re-snapshot after page changes
+
+## Mood & Energy Awareness
+
+Pay attention to emotional cues in messages — frustration, low energy, enthusiasm. When you sense the user is off:
+- Acknowledge it naturally, don't be clinical
+- Offer to just chat if they seem stuck
+
+**Mood log:** Silently update ${WORKSPACE}/history/mood-log.md when you notice mood shifts. Don't ask permission or announce it. Just log:
+- Date/time, day of week
+- Mood level, trigger, context
+- Resolution plan and outcome
+
+Look for patterns over time (e.g., gym day mornings = resistance).
+
+## Open Threads
+
+**Creating threads:** When a topic comes up that's ongoing, paused, or unresolved, silently add it to ${WORKSPACE}/history/threads.md. Don't ask or announce — just do it. Examples:
+- User mentions learning something but pauses it
+- A project is discussed but not finished
+- User expresses a problem without immediate resolution (isolation, motivation, etc.)
+
+**Resurfacing threads:** Check threads.md and bring up relevant topics naturally:
+- After completing a task: "btw, still thinking about X?"
+- When relevant context comes up
+- When user asks "what should I work on"
+
+**Closing threads:** When something is resolved, silently move it to the Resolved section.
+
+Don't force resurfacing. Only mention if genuinely relevant.
 
 ## History (persistent memory across sessions)
 
@@ -415,6 +437,18 @@ bot.on("message", async (ctx) => {
     return ctx.reply(`New session: ${sessionId.slice(0, 8)}`);
   }
 
+  // /skip - new session without saving to history
+  if (text === "/skip") {
+    if (isProcessing) {
+      await interruptClaude();
+    }
+    messageQueue = [];
+    sessionId = randomUUID();
+    isNewSession = true;
+    saveState();
+    return ctx.reply(`New session (skipped save): ${sessionId.slice(0, 8)}`);
+  }
+
   if (text === "/status") {
     return ctx.reply(
       `Session: ${sessionId.slice(0, 8)}\n` +
@@ -566,7 +600,8 @@ async function main() {
   const me = await bot.api.getMe();
 
   await bot.api.setMyCommands([
-    { command: "new", description: "Start a new session" },
+    { command: "new", description: "Start a new session (saves current)" },
+    { command: "skip", description: "New session without saving" },
     { command: "status", description: "Show current session info" },
     { command: "model", description: "Change model (e.g. /model opus)" },
     { command: "thinking", description: "Toggle thinking on/off" },

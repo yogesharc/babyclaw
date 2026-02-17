@@ -5,3 +5,7 @@ tmp/
 article.md
 .DS_Store
 CLAUDE.md
+crons/logs/
+crons/locks/
+crons/state/
+crons/*.txt

@@ -10,8 +10,12 @@ Claude Code on a VPS, controlled from Telegram. A lightweight, single-file alter
 - **Talk to it** — Send text, voice messages, or images. Voice is transcribed automatically via Whisper
 - **Get files back** — Ask Claude to send you any file (images, code, docs) and it delivers them directly in Telegram
 - **Persistent memory** — Conversations auto-save when starting a new session with `/new`. Context survives session resets
-- **Personality adaptation** (WIP) — Claude mirrors your communication style over time and evolves its personality
+- **Personality adaptation** — Claude mirrors your communication style over time. A cron job analyzes conversations every 3 days and updates its personality config automatically
 - **Message queueing** — Send follow-ups while Claude is busy. They queue up and get sent together
+- **Mood & thread tracking** — Silently logs mood shifts and tracks open threads (topics, projects, problems). Resurfaces them naturally when relevant
+- **Skill discovery** — Daily cron scans your conversations and suggests relevant skills from [ClawdHub](https://clawhub.ai) and [skills.sh](https://skills.sh). Skills are vetted for security before suggesting
+- **Pattern detection** — Analyzes conversations to find automation opportunities and suggests new cron jobs
+- **Daily digest** — End-of-day summary of what you talked about, sent to Telegram
 - **Cron automation** — Schedule tasks. Claude can set up and manage cron jobs that run scripts, send reports, check issues
 - **Model switching** — Swap between Sonnet, Opus, etc. on the fly
 - **Remote restart** — `/restart` from Telegram. No SSH needed
@@ -89,6 +93,7 @@ Open Telegram, find your bot, and send a message. On your first message, Claude 
 | `/list` | Show 5 most recent sessions |
 | `/list <keywords>` | Search sessions from last 2 weeks (OR match) |
 | `/resume <id>` | Resume a previous session by ID |
+| `/skip` | New session without saving to history |
 | `/interrupt` | Stop current task (optionally follow with new message) |
 | `/restart` | Restart the bot (auto-restarts via start.sh) |
 | `/kill` | Kill stuck task and clear queue |
@@ -111,6 +116,10 @@ BabyClaw has three layers of memory:
 
 **Recent conversations** — A rolling list of the last 50 history entries is kept in `history/recent.md` and loaded into every new session automatically. This gives Claude awareness of what's been discussed recently without having to search.
 
+**Mood log** — Claude silently logs mood shifts it detects in conversations to `history/mood-log.md`. Tracks triggers, context, and resolutions. Looks for patterns over time (e.g., certain days or activities correlating with low energy).
+
+**Open threads** — Ongoing topics are tracked in `history/threads.md`. When something is discussed but not resolved — a learning goal, a project idea, a problem — Claude logs it and resurfaces it naturally when relevant.
+
 ## Deploying Updates
 
 ```bash
@@ -131,17 +140,29 @@ Then send `/restart` in Telegram. The bot picks up the new code automatically.
 
 Session IDs are persisted to `state.json` so sessions survive bot restarts.
 
+## Built-in Crons
+
+These are installed automatically by the install script and run in the background:
+
+**Pattern detector** (`crons/pattern-detector.sh`) — Analyzes your conversations over the past week. If it spots a task you do repeatedly, it suggests automating it as a cron job. Sends suggestions to Telegram.
+
+**Skills suggester** (`crons/skills-suggester.sh`) — Scans recent conversations for tools and frameworks you're working with. Searches [ClawdHub](https://clawhub.ai) and [skills.sh](https://skills.sh) for relevant skills, vets them for security, and suggests ones that would help. Won't repeat suggestions.
+
+**Personality updater** (`crons/personality-updater.sh`) — Every 3 days, analyzes your communication style and updates the Identity section in `~/.claude/CLAUDE.md`. Picks up on tone, slang, preferences, and how you give instructions.
+
+**Daily digest** (`crons/daily-digest.sh`) — Sends a summary of the day's conversation topics to Telegram at the end of the day.
+
 ## Example Crons
 
 The `examples/crons/` folder has real cron scripts I use daily. You don't need to set these up manually — just tell Claude via Telegram what you want automated and it'll create the script, set up crontab, and wire up Telegram notifications.
 
-Here's what I run:
+Here's what's included:
 
-**Daily stats report** (`daily-stats.sh`) — Runs at 10:30 PM. Pulls website analytics via [Supalytics](https://www.supalytics.co?utm_source=babyclaw_repo) CLI (visitors, revenue, conversions, top sources, signups), monitors competitor changelogs for new updates, lists PRs merged that day, and sends a single summary to Telegram. A quick end-of-day review of everything that happened.
+**Daily stats report** (`daily-stats.sh`) — Pulls website analytics via [Supalytics](https://www.supalytics.co?utm_source=babyclaw_repo) CLI (visitors, revenue, conversions, top sources, signups), monitors competitor changelogs, lists PRs merged that day, and sends a summary to Telegram.
 
-**Changelog worker** (`changelog-worker.sh`) — Runs at 10:20 PM, just before the daily stats report. Checks merged PRs, asks Claude Code if any are user-facing, and if so, writes a changelog entry matching the existing format, commits it, and creates a PR. By the time I check the daily stats, the changelog PR is already waiting for review.
+**Changelog worker** (`changelog-worker.sh`) — Checks merged PRs, asks Claude Code if any are user-facing, and if so, writes a changelog entry, commits it, and creates a PR.
 
-**Issue checker + worker** (`issue-checker.sh`, `issue-worker.sh`) — Runs every 15 minutes. Monitors my GitHub project board for issues assigned to a bot account. When it finds one, it clones the repo, runs Claude Code to implement the fix, creates a PR, loops through automated code review, and notifies me when it's ready for final review. Fully autonomous issue resolution.
+**Issue checker + auto-assign** (`issue-checker.sh`, `issue-worker.sh`, `auto-assign.sh`) — Monitors GitHub project boards for issues assigned to a bot account. Clones the repo, runs Claude Code to implement the fix, creates a PR, loops through automated code review, and notifies when ready for final review.
 
 To set up your own crons, just ask Claude:
 > "Set up a cron job that checks my GitHub for new issues every hour and notifies me on Telegram"
